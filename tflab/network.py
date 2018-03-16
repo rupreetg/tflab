@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import tensorflow as tf
 import numpy as np
-from cost_functions import mse, mmd_squared, gaussian, multiscale_gaussian
+from cost_functions import mse, mmd_squared, gaussian, multiscale_gaussian, cross_entropy
 
 
 class FeedForward(object):
@@ -150,4 +150,43 @@ class MMDNet(FeedForward):
                 mmd_val, mse_val = sess.run([mmd_, mse_],
                                             feed_dict={X_: batch_X, Y_: batch_Y, R_: batch_R, S_: batch_S})
                 print("Training Step {} of {}, loss {}, mmd {}, mse {}".format(step, steps, loss_val, mmd_val, mse_val))
+        return losses
+
+
+# Logistic Regression Implementation 
+"""
+Created on Friday, March 16, 2018
+
+@author: rupreetg
+
+"""
+class FeedForwardLogistic(FeedForward):
+    def loss_(self, X_, Y_):
+        Y_hat = self.transform_(X_)
+        return cross_entropy(Y_, Y_hat)
+
+    def train(self, sess, X, Y, steps=10000, minibatch_size = 200, 
+                optimizer = tf.train.RMSPropOptimizer(learning_rate=0.001)):
+        
+        #Create placeholder for X_ & Y_ 
+        X_ = tf.placeholder(tf.float32, (None, self.sizes[0]), "FeedForwardLogistic_X")
+        Y_ = tf.placeholder(tf.float32, (None, self.sizes[-1]), "FeedForwardLogistic_Y")
+
+        #Calculate loss for X_, Y_
+        loss_ = self.loss_(X_, Y_)
+        train_ = self.train_(loss_, optimizer)
+
+        sess.run(tf.global_variables_initializer())
+
+        losses = []
+        for step in range(steps):
+            n_batch = X.shape[0] #784..
+            i_batch = (step % n_batch) * minibatch_size
+            batch_X = X[i_batch:i_batch + minibatch_size]
+            batch_Y = Y[i_batch:i_batch + minibatch_size]
+
+            train_val, loss_val = sess.run([train_, loss_], feed_dict={X_: batch_X, Y_: batch_Y})
+            losses.append(loss_val)
+            if step % 500 == 0:
+                print("Step {} of {}, logloss {}".format(step, steps, loss_val))
         return losses

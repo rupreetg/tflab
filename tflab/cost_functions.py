@@ -45,3 +45,6 @@ def mmd_squared(source, target, kernel):
 
 def mmd(source,target, kernel):
     tf.sqrt(mmd_squared(source,target,kernel))
+
+def cross_entropy(Y, Y_hat):
+    return tf.reduce_mean(-tf.reduce_sum(tf.multiply(Y,tf.log(Y_hat + 1e-8), name="elementwise"), name="CrossEntropy"))
