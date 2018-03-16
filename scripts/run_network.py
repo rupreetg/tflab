@@ -7,9 +7,16 @@ mpl.use('Agg')
 import matplotlib.pyplot as plt
 import sys
 from os import path
+
+libpath = "../tflab/tflab"
+
+if(libpath not in sys.path):
+    sys.path.append(libpath)
+
+
 try:
-    from tflab.network import FeedForwardRegression
-    from tflab.optimizers import ASGradientDescentOptimizer, ASRMSPropOptimizer
+    from network import FeedForwardRegression
+    from optimizers import ASGradientDescentOptimizer, ASRMSPropOptimizer
 except ImportError:
     from tflab.tflab.network import FeedForwardRegression
     from tflab.tflab.optimizers import ASGradientDescentOptimizer, ASRMSPropOptimizer
@@ -44,7 +51,7 @@ opt_names = ['SGD', 'SGD+AS', 'RMSProp', 'RMSProp+AS', 'ADAM', 'SGD+M', 'SGD+NM'
 losses = []
 with tf.Session() as sess:
     for i, opt in enumerate(opts):
-        print opt_names[i]
+        print(opt_names[i])
         reg = FeedForwardRegression([X_dim, Y_dim], nonlinearities=lambda x: x)
         loss = reg.train(sess, train_X, train_Y, minibatch_size=20,
                          steps=steps, optimizer=opts[i])
@@ -54,4 +61,4 @@ plt.clf()
 for loss, opt_name in zip(losses, opt_names):
     plt.plot(loss[::100], '+-', alpha=.5, label=opt_name)
 plt.legend()
-plt.savefig("../../plots/lr_comparison.png")
+plt.savefig("./plots/lr_comparison.png")
